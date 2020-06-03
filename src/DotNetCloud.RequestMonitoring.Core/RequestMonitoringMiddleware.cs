@@ -22,7 +22,7 @@ namespace DotNetCloud.RequestMonitoring.Core
         private readonly IRequestMetricRecorder _metricRecorder;
         private readonly IRequestTagBuilder _tagBuilder;
         private readonly ILogger<RequestMonitoringMiddleware> _logger;
-
+        
         public RequestMonitoringMiddleware(RequestDelegate next, IRequestMetricRecorder metricRecorder, IRequestTagBuilder tagBuilder, ILogger<RequestMonitoringMiddleware> logger)
         {
             _next = next;
@@ -33,7 +33,7 @@ namespace DotNetCloud.RequestMonitoring.Core
 
         public async Task InvokeAsync(HttpContext context)
         {
-            var sw = Stopwatch.StartNew();
+            var startTicks = Stopwatch.GetTimestamp();
 
             context.Items[UserAgentItem] = context.Request.Headers.TryGetValue(HeaderNames.UserAgent, out var userAgentValue) && !StringValues.IsNullOrEmpty(userAgentValue) 
                 ? userAgentValue.First() 
@@ -56,10 +56,15 @@ namespace DotNetCloud.RequestMonitoring.Core
                 context.Response.StatusCode = 500;
             }
 
+            var stopTicks = Stopwatch.GetTimestamp();
+
+            var totalTicks = stopTicks - startTicks;
+
+            var ns = 1000000000.0 * (double)totalTicks / Stopwatch.Frequency;
+            var ms = ns / 1000000.0;
+            
             try
             {
-                var milliseconds = sw.ElapsedMilliseconds;
-
                 var endpoint = context.GetEndpoint();
 
                 if (endpoint is Endpoint && endpoint.Metadata.GetMetadata<ExcludeFromRequestMetricsAttribute>() is object)
@@ -74,7 +79,7 @@ namespace DotNetCloud.RequestMonitoring.Core
                     _logger.LogTrace("Tagging metrics with {TagValue}", tag);
                 }
 
-                _metricRecorder.RecordHttpResponse(milliseconds, tags);
+                _metricRecorder.RecordHttpResponse((long)ms, tags);
             }
             catch (Exception e)
             {

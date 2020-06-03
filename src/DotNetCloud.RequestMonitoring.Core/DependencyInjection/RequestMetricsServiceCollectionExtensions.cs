@@ -19,9 +19,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddSingleton<IRequestTagBuilder, RequestTagBuilder>();
 
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<ITagProducer, RouteTagProducer>());
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<ITagProducer, MethodTagProducer>());
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<ITagProducer, UserAgentTagProducer>());
             services.TryAddEnumerable(ServiceDescriptor.Singleton<ITagProducer, StatusCodeTagProducer>());
             services.TryAddEnumerable(ServiceDescriptor.Singleton<ITagProducer, StatusCodeRangeTagProducer>());
             services.TryAddEnumerable(ServiceDescriptor.Singleton<ITagProducer, RequestResultTagProducer>());
