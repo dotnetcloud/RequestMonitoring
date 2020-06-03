@@ -1,8 +1,12 @@
+using System.Threading;
+using System.Threading.Tasks;
+using DotNetCloud.RequestMonitoring.Core;
 using DotNetCloud.RequestMonitoring.DataDog;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 
 namespace SampleWebApi
@@ -21,6 +25,8 @@ namespace SampleWebApi
         {
             services.AddControllers();
 
+            services.AddHealthChecks();
+
             services.AddDefaultRequestMetrics().WithDataDogRecorder();
         }
 
@@ -38,6 +44,7 @@ namespace SampleWebApi
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapHealthChecks("/healthcheck").WithMetadata(new ExcludeFromRequestMetricsAttribute());
                 endpoints.MapControllers();
             });
         }

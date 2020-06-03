@@ -61,14 +61,19 @@ namespace DotNetCloud.RequestMonitoring.Core
 
             var milliseconds = sw.ElapsedMilliseconds;
 
-            var tags = _tagBuilder.BuildTags(context);
+            var endpoint = context.GetEndpoint();
 
-            foreach (var tag in tags)
+            if (endpoint is Endpoint && endpoint.Metadata.GetMetadata<ExcludeFromRequestMetricsAttribute>() is null)
             {
-                _logger.LogTrace("Tagging metrics with {TagValue}", tag);
-            }
+                var tags = _tagBuilder.BuildTags(context);
 
-            _metricRecorder.RecordHttpResponse(milliseconds, tags);
+                foreach (var tag in tags)
+                {
+                    _logger.LogTrace("Tagging metrics with {TagValue}", tag);
+                }
+
+                _metricRecorder.RecordHttpResponse(milliseconds, tags);
+            }
         }
     }
 }
