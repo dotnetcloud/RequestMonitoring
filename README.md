@@ -37,12 +37,12 @@ Each metric will by default be tagged with six tags which can be used to analyse
 
 The default tags for a request may appear as follows:
 
-request_route:WeatherForecast
-request_method:GET
-user_agent:PostmanRuntime/7.25.0
-status_code:200
-status_code_range:2xx
-request_result:success
+* request_route:WeatherForecast
+* request_method:GET
+* user_agent:PostmanRuntime/7.25.0
+* status_code:200
+* status_code_range:2xx
+* request_result:success
 
 # Future
 
