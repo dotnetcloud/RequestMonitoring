@@ -4,12 +4,12 @@
     <Description>.NET Core middleware which provides monitoring of common request metrics with recording to DataDog.</Description>
     <Copyright>Copyright © 2020, Steve Gordon</Copyright>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <Version>1.0.0-alpha.3</Version>
+    <Version>1.0.0-alpha.4</Version>
     <VersionSuffix>1.0.0.$([System.DateTime]::UtcNow.ToString(mmff))</VersionSuffix>
     <AssemblyVersion Condition=" '$(VersionSuffix)' == '' ">0.0.0.1</AssemblyVersion>
     <AssemblyVersion Condition=" '$(VersionSuffix)' != '' ">$(VersionSuffix)</AssemblyVersion>
-    <InformationalVersion>1.0.0 Alpha 3</InformationalVersion>
-    <PackageVersion>1.0.0-alpha.3</PackageVersion>
+    <InformationalVersion>1.0.0 Alpha 4</InformationalVersion>
+    <PackageVersion>1.0.0-alpha.4</PackageVersion>
     <PackageId>DotNetCloud.RequestMonitoring.Core</PackageId>
     <PackageTags>monitoring;observability;metrics;middleware;netcore</PackageTags>
     <PackageProjectUrl>https://github.com/dotnetcloud/RequestMonitoring</PackageProjectUrl>
