@@ -35,12 +35,9 @@ namespace DotNetCloud.RequestMonitoring.Core
         {
             var sw = Stopwatch.StartNew();
 
-            var userAgent = Unknown;
-
-            if (context.Request.Headers.TryGetValue(HeaderNames.UserAgent, out var userAgentValue) && !StringValues.IsNullOrEmpty(userAgentValue))
-                userAgent = userAgentValue.First();
-
-            context.Items[UserAgentItem] = userAgent;
+            context.Items[UserAgentItem] = context.Request.Headers.TryGetValue(HeaderNames.UserAgent, out var userAgentValue) && !StringValues.IsNullOrEmpty(userAgentValue) 
+                ? userAgentValue.First() 
+                : Unknown;
 
             try
             {
@@ -48,23 +45,28 @@ namespace DotNetCloud.RequestMonitoring.Core
             }
             catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
             {
-                _logger.LogInformation("The caller cancelled the HTTP request. Returning 499 status code.");
+                _logger.LogInformation("The caller cancelled the HTTP request. Returning 499 'Client Closed Request' status code.");
 
                 context.Response.StatusCode = 499; // 499 Client Closed Request
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "An unhandled exception was thrown by the applications");
+                _logger.LogError(e, "An unhandled exception was thrown by the applications.");
 
                 context.Response.StatusCode = 500;
             }
 
-            var milliseconds = sw.ElapsedMilliseconds;
-
-            var endpoint = context.GetEndpoint();
-
-            if (endpoint is Endpoint && endpoint.Metadata.GetMetadata<ExcludeFromRequestMetricsAttribute>() is null)
+            try
             {
+                var milliseconds = sw.ElapsedMilliseconds;
+
+                var endpoint = context.GetEndpoint();
+
+                if (endpoint is Endpoint && endpoint.Metadata.GetMetadata<ExcludeFromRequestMetricsAttribute>() is object)
+                {
+                    return; // skip metrics recording
+                }
+
                 var tags = _tagBuilder.BuildTags(context);
 
                 foreach (var tag in tags)
@@ -74,6 +76,10 @@ namespace DotNetCloud.RequestMonitoring.Core
 
                 _metricRecorder.RecordHttpResponse(milliseconds, tags);
             }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "An error occurred when recording request metrics.");
+            }   
         }
     }
 }

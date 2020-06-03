@@ -4,6 +4,7 @@ using DotNetCloud.RequestMonitoring.Core;
 using DotNetCloud.RequestMonitoring.DataDog;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -38,6 +39,11 @@ namespace SampleWebApi
                 //app.UseDeveloperExceptionPage();
             }
 
+            app.MapWhen(ctx => ctx.Request.Path.StartsWithSegments("/middleware"), app =>
+            {
+                app.UseMiddleware<CustomMiddleware>();
+            });
+
             app.UseRouting();
 
             app.UseAuthorization();
@@ -47,6 +53,19 @@ namespace SampleWebApi
                 endpoints.MapHealthChecks("/healthcheck").WithMetadata(new ExcludeFromRequestMetricsAttribute());
                 endpoints.MapControllers();
             });
+        }
+    }
+
+    public class CustomMiddleware
+    {
+        private readonly RequestDelegate _next;
+
+        public CustomMiddleware(RequestDelegate next) => _next = next;
+
+        public async Task InvokeAsync(HttpContext context)
+        {
+            context.Response.StatusCode = 200;
+            await context.Response.WriteAsync("Hello from middleware");
         }
     }
 }
