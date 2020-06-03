@@ -63,6 +63,11 @@ namespace DotNetCloud.RequestMonitoring.Core
 
             var tags = _tagBuilder.BuildTags(context);
 
+            foreach (var tag in tags)
+            {
+                _logger.LogTrace("Tagging metrics with {TagValue}", tag);
+            }
+
             _metricRecorder.RecordHttpResponse(milliseconds, tags);
         }
     }
