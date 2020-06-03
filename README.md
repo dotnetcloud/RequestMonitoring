@@ -21,10 +21,34 @@ services.AddDefaultRequestMetrics().WithDataDogRecorder();
 
 The above code registers the default tag providers and a metric recorder which sends metrics to DogStatsd. It registers an `IStartupFilter` to add the required middleware to the beginning of the application pipeline.
 
+In some cases, you may not want to record metrics for certain endpoints.
+
+Add the `` attribute to any controllers/actions you wish to exclude from metric recording.
+
+```csharp
+[HttpGet]
+[ExcludeFromRequestMetrics]
+public IActionResult Get()
+{
+    return Ok();
+}
+```
+
+You can also exclude endpoints when mapping them.
+
+```csharp
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapHealthChecks("/healthcheck").WithMetadata(new ExcludeFromRequestMetricsAttribute());
+    endpoints.MapControllers();
+});
+```
+
+The above code excludes health checks from appearing in the recorded metrics.
+
 ## Metrics
 
 In its current form, the DataDog recorder will send two metrics to DataDog.
-
 
 Each metric will by default be tagged with six tags which can be used to analyse the data:
 
